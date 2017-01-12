@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<!-- saved from url=(0035)http://jasonregistry.herokuapp.com/ -->
+<html class="whatinput-types-initial whatinput-types-mouse" data-whatinput="mouse" data-whatintent="mouse" lang="en">
+<head>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+	<meta content="ie=edge" http-equiv="x-ua-compatible">
+	<meta content="width=device-width, initial-scale=1.0" name="viewport">
+	<title>Jason Extesnion Manager</title>
+	<link href="./stylesheets/app.css" rel="stylesheet" type="text/css">
+	<meta class="foundation-mq">
+	<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+	<!-- Jquery file etc -->
+	<script>if (window.module) module = window.module;</script>
+	<script src="main.js"></script>
+
+
+</head>
+<body>
+	<div class="nav" style="display: none">
+		<div class="top-bar">
+			<div class="row">
+				<form action="http://jasonregistry.herokuapp.com/search/" data-abide="31i43e-abide" novalidate="">
+					<div class="input-group" id="search">
+						<input class="search-input input-group-field search-placeholder" name="search" placeholder= "find extensions" required="" type="search">
+						<div class="input-group-button">
+							<input class="search button" type="submit" value="Search">
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="row align-center" style="height:170px">
+		<div class="small-11 medium-7 large-5 columns"><img alt="Jasonette" src="./images/jason.png"></div>
+	</div>
+<div class="row align-spaced">
+		<div class="shrink columns">
+			<div class="loading_bar" id="loader">
+				<div class="loading_icon">
+					<div class="loading_spacing"><img class="loading_iamge" alt="loading" src="./images/loading.gif"></div>
+				</div>
+				<div class="loading_text">
+					<div class="loading_text_spacing">
+						<p id="loadingText" style=" margin-bottom:0; margin-top:7px; color:#fff; font-size: 14px;">Downloading extension...</p>
+					</div>
+				</div>
+			</div>
+			<div class="border_box">
+				<label style=" font-weight: bold; font-size:15px;">GitHub Repo</label>
+				<div class="input-group">
+					<label><span class="input-group-label">github.com/</span><input aria-required="true" class="repo-placeholder input-group-field valid" id="repo" name="jr[url]" placeholder="twbs/bootstrap.git" type="text" onchange="handleChange(this)"></label>
+				</div><label><span class="form-error">Required</span></label>
+				<p class="help-text"></p>
+				<fieldset class="text-center fieldset">
+					<legend style="background-color: aliceblue; font-weight:bold;">Choose Platform</legend><input id="checkbox-ios" name="ios" type="checkbox"><label for="#checkbox-ios">iOS</label><input id="checkbox-android" name="android" type="checkbox"><label for="#checkbox-android";>Android</label>
+				</fieldset>
+				<div class="alert callout small" data-abide-error="" style="display: none">
+					<p><i class="fi-alert"></i> Error</p>
+				</div><button id="btnInstall" class="button float-right" onclick="";>Install</button>
+			</div>
+		</div>
+	</div>
+
+
+</body>
+<script>
+    function handleChange(input) {
+        if (input.value < 0) alert("Value should be between 0 - 100");
+        if (input.value > 100) alert("Value should be between 0 - 100");
+    }
+</script>
+
+</html>
