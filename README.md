@@ -2,6 +2,8 @@
 
 > Jason Registry Frontend for browsing, searching, and installing Jasonette extension
 
+[Try](https://jasonette.github.io/Jr-client/docs)
+
 ## Build Setup
 
 ``` bash
