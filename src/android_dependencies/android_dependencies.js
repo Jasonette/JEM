@@ -1,15 +1,15 @@
 import { ShowLoading, ShowErrorDialog } from '../utils/utils';
 var fs = require('fs');
 
-export var InjectCocoapodsDependencies = function(path, dependencies){
-  var podPath = `${path}` + "/Podfile";
+export var InjectGradleDependencies = function(path, dependencies){
+  var podPath = `${path}` + "/build.gradle";
   console.log(podPath);
-  ShowLoading('Syncying PodFile...');
-  var content = GetPodFileContent(podPath);
-  var injectableDependencies = GetInjectablePods(content, dependencies);
+  ShowLoading('Syncying Gradle ...');
+  var content = GetGradleFileContent(podPath);
+  var injectableDependencies = GetInjectableGradle(content, dependencies);
   if(injectableDependencies.length > 0){
-      var generatedPod = GeneratePodFileContent(content, injectableDependencies);
-      UpdatePodFile(generatedPod, podPath);
+      var generatedPod = GenerateGradleFileContent(content, injectableDependencies);
+      UpdateGradleFile(generatedPod, podPath);
   }
   else{
     console.log("i don't have any dependencies");
@@ -28,16 +28,16 @@ export var GetDependencies = function(gitFiles){
   }
 }
 
-function GetPodFileContent(filePath)
+function GetGradleFileContent(filePath)
 {
   var fs = require('fs');
   var content = fs.readFileSync(filePath, 'utf8');
   return content;
 }
-function GeneratePodFileContent(content,injection)
+function GenerateGradleFileContent(content,injection)
 {
 var string = content;
-var preString = "pod ";
+var preString = "compile ";
 var searchString = "\n";
 var preIndex = string.lastIndexOf(preString);
 var searchIndex = preIndex + string.substring(preIndex).indexOf(searchString);
@@ -47,18 +47,18 @@ return pre + injection + post;
 
 }
 
-function GetInjectablePods(content, dependencies)
+function GetInjectableGradle(content, dependencies)
 {
   var validDependencies = [];
   for(var i=0; i < dependencies.length; i++){
     if(content.indexOf(dependencies[i]) == -1){
-        validDependencies.push("\n  " + dependencies[i]);
+        validDependencies.push("\n    " + dependencies[i]);
     }
   }
   return validDependencies;
 }
 
-function UpdatePodFile(content,filePath)
+function UpdateGradleFile(content,filePath)
 {
   fs.truncate(filePath, 0, function() {
       fs.writeFile(filePath, content, function (err) {
@@ -68,31 +68,10 @@ function UpdatePodFile(content,filePath)
           }
           else {
             console.log("I am success");
-            ExecutePodInstall(filePath);
+            ShowLoading('Completed...', true);
+
 
           }
       });
   });
-}
-function ExecutePodInstall(path){
-  ShowLoading('Installing dependencies...');
-  var shell = require('shelljs');
-  var preIndex = path.lastIndexOf('/Podfile');
-  var alteredPath = path.substring(0, preIndex)
-  console.log(alteredPath);
-
-
-  try{
-    shell.cd(alteredPath);
-    shell.exec('pod install', function(code, stdout,stderr){
-    console.log('Exit code : ', code);
-    console.log('Program output : ', stdout);
-    console.log('Program stederr : ', stderr);
-    ShowLoading('Completed...', true);
-  });
-  }
-  catch(e){
-    ShowLoading('Error while Installing dependencies...');
-  }
-
 }

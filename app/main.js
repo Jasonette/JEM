@@ -10,12 +10,14 @@ var ShowErrorDialog = function(title, message){
   electron.remote.dialog.showErrorBox(title, message);
 };
 
-var IsValidProjectDirectory = function(path){
+    var IsValidProjectDirectory = function(path, projectType){
     const fs = require('fs');
     const folderPath = `${path}`;
+    var projectFile = 'Jasonette.xcodeproj';
+    if(projectType == 'android'){ projectFile = 'build.gradle'; }
     var files = fs.readdirSync(folderPath);
     for(var i in files){
-      if(files[i] == 'Jasonette.xcodeproj')
+      if(files[i] == projectFile)
         return true;
     }
     return false;
@@ -68,7 +70,38 @@ var GetCompleteGitUrl = function(url){
       return "http://github.com/" + url;
   }
 };
-
+var GetActionName = function(gitFiles)
+{
+    for(var i in gitFiles){
+      if(gitFiles[i].endsWith("jr.json")){
+        var fs = require('fs');
+        var jsonObj = JSON.parse(fs.readFileSync(gitFiles[i], 'utf8'));
+        if(jsonObj.hasOwnProperty('name'))
+           return "$" + jsonObj.name;
+      }
+    }
+    return "$" + Math.random().toString(36).substring(7);
+};
+var GetSpecificFilesFromPath = function(path, allowedFiles)
+{
+    var ValidFiles = [];
+    const folderPath = `${path}`;
+    console.log(folderPath);
+    const fs = require('fs');
+    var files = fs.readdirSync(folderPath);
+    for (var i in files) {
+      if (files[i].indexOf(".") !=-1) {
+        var arr = files[i].split('.');
+        if(arr.length > 0){
+          var filetype = arr[1];
+          var fileName = arr[0];
+          if(allowedFiles.indexOf(filetype) > -1)
+             ValidFiles.push(`${path}/` + files[i]);
+           }
+         }
+    }
+return ValidFiles;
+};
 function IsDirectoryExists (path, isFile, isDirectory) {
    try {
      const fs = require('fs');
@@ -92,15 +125,17 @@ function IsDirectoryExists (path, isFile, isDirectory) {
 
 var fs = require('fs');
 
-var InjectCocoapodsDependencies = function(path, dependencies){
-  var podPath = `${path}` + "/Podfile";
+var fs$1 = require('fs');
+
+var InjectGradleDependencies = function(path, dependencies){
+  var podPath = `${path}` + "/build.gradle";
   console.log(podPath);
-  ShowLoading('Syncying PodFile...');
-  var content = GetPodFileContent(podPath);
-  var injectableDependencies = GetInjectablePods(content, dependencies);
+  ShowLoading('Syncying Gradle ...');
+  var content = GetGradleFileContent(podPath);
+  var injectableDependencies = GetInjectableGradle(content, dependencies);
   if(injectableDependencies.length > 0){
-      var generatedPod = GeneratePodFileContent(content, injectableDependencies);
-      UpdatePodFile(generatedPod, podPath);
+      var generatedPod = GenerateGradleFileContent(content, injectableDependencies);
+      UpdateGradleFile(generatedPod, podPath);
   }
   else{
     console.log("i don't have any dependencies");
@@ -108,16 +143,27 @@ var InjectCocoapodsDependencies = function(path, dependencies){
   }
 };
 
-function GetPodFileContent(filePath)
+var GetDependencies$1 = function(gitFiles){
+  for(var i in gitFiles){
+    if(gitFiles[i].endsWith("jr.json")){
+      var fs = require('fs');
+      var jsonObj = JSON.parse(fs.readFileSync(gitFiles[i], 'utf8'));
+      if(jsonObj.hasOwnProperty('dependencies'))
+         return jsonObj.dependencies;
+    }
+  }
+};
+
+function GetGradleFileContent(filePath)
 {
   var fs = require('fs');
   var content = fs.readFileSync(filePath, 'utf8');
   return content;
 }
-function GeneratePodFileContent(content,injection)
+function GenerateGradleFileContent(content,injection)
 {
 var string = content;
-var preString = "pod ";
+var preString = "compile ";
 var searchString = "\n";
 var preIndex = string.lastIndexOf(preString);
 var searchIndex = preIndex + string.substring(preIndex).indexOf(searchString);
@@ -127,57 +173,36 @@ return pre + injection + post;
 
 }
 
-function GetInjectablePods(content, dependencies)
+function GetInjectableGradle(content, dependencies)
 {
   var validDependencies = [];
   for(var i=0; i < dependencies.length; i++){
     if(content.indexOf(dependencies[i]) == -1){
-        validDependencies.push("\n  " + dependencies[i]);
+        validDependencies.push("\n    " + dependencies[i]);
     }
   }
   return validDependencies;
 }
 
-function UpdatePodFile(content,filePath)
+function UpdateGradleFile(content,filePath)
 {
-  fs.truncate(filePath, 0, function() {
-      fs.writeFile(filePath, content, function (err) {
+  fs$1.truncate(filePath, 0, function() {
+      fs$1.writeFile(filePath, content, function (err) {
           if (err) {
               ShowLoading('Error while writing Podfile...', true);
               return console.log("Error writing file: " + err);
           }
           else {
             console.log("I am success");
-            ExecutePodInstall(filePath);
+            ShowLoading('Completed...', true);
+
 
           }
       });
   });
 }
-function ExecutePodInstall(path){
-  ShowLoading('Installing dependencies...');
-  var shell = require('shelljs');
-  var preIndex = path.lastIndexOf('/Podfile');
-  var alteredPath = path.substring(0, preIndex);
-  console.log(alteredPath);
 
-
-  try{
-    shell.cd(alteredPath);
-    shell.exec('pod install', function(code, stdout,stderr){
-    console.log('Exit code : ', code);
-    console.log('Program output : ', stdout);
-    console.log('Program stederr : ', stderr);
-    ShowLoading('Completed...', true);
-  });
-  }
-  catch(e){
-    ShowLoading('Error while Installing dependencies...');
-  }
-
-}
-
-var CloneAndAddToIDE = function (path, gitUrl){
+var CloneAndAddToAndroid = function (path, gitUrl){
     var pieces = gitUrl.replace(".git","").split("/");
     var extensionName = pieces[pieces.length-1];
     var fullPath = path + "/Extensions/" + extensionName;
@@ -191,88 +216,50 @@ var CloneAndAddToIDE = function (path, gitUrl){
           }
         })
         .then(function() {
-            ShowLoading('Verifying extension...');
-            var AllFiles = GetAllFilesFromPath(fullPath);
-            var extName = GetActionName(AllFiles);
-            AddFileInXcode(AllFiles,path,extName);
-            var dep = GetDependencies(AllFiles);
-            if(dep != null && dep.length > 0){
-              InjectCocoapodsDependencies(path, dep);
+          ShowLoading('Verifying extension...');
+          var validFiles = ["java","json"];
+          var allFiles = GetSpecificFilesFromPath(fullPath, validFiles);
+          var extName = GetActionName(allFiles);
+          AddFilesInAndroidStudio(allFiles,fullPath,extName,path);
+          var dep = GetDependencies$1(allFiles);
+          if(dep != null && dep.length > 0){
+            InjectGradleDependencies(path, dep);
           }else {
             ShowLoading('Completed...', true);
           }
-    });
+        });
 };
-function GetAllFilesFromPath(path)
-{
-    var ValidFiles = [];
-    var AllowedFiles = ["h","m","json","plist"];
-    const folderPath = `${path}`;
-    console.log(folderPath);
-    const fs = require('fs');
-    var files = fs.readdirSync(folderPath);
-    for (var i in files) {
-      if (files[i].indexOf(".") !=-1) {
-        var arr = files[i].split('.');
-        if(arr.length > 0){
-          var filetype = arr[1];
-          var fileName = arr[0];
-          if(AllowedFiles.indexOf(filetype) > -1)
-             ValidFiles.push(`${path}/` + files[i]);
-           }
-         }
-    }
-return ValidFiles;
-}
 
-function GetActionName(gitFiles)
-{
-    for(var i in gitFiles){
-      if(gitFiles[i].endsWith("jr.json")){
-        var fs = require('fs');
-        var jsonObj = JSON.parse(fs.readFileSync(gitFiles[i], 'utf8'));
-        if(jsonObj.hasOwnProperty('name'))
-           return "$" + jsonObj.name;
-      }
-    }
-    return "$" + Math.random().toString(36).substring(7);
-}
-
-function GetDependencies(gitFiles){
-  for(var i in gitFiles){
-    if(gitFiles[i].endsWith("jr.json")){
-      var fs = require('fs');
-      var jsonObj = JSON.parse(fs.readFileSync(gitFiles[i], 'utf8'));
-      if(jsonObj.hasOwnProperty('dependencies'))
-         return jsonObj.dependencies;
-    }
-  }
-}
-
-function AddFileInXcode(AllFiles,path,extName)
+function AddFilesInAndroidStudio(AllFiles,extesnionPath,extName,path)
 {
     ShowLoading('Installing extesnion...');
-    var xcode = require('node-xcode-opifex'),
-    fs = require('fs'),
-    projectSource = path + '/Jasonette.xcodeproj/project.pbxproj',
-    projectPath = projectSource,
-    myProj = xcode.project(projectSource);
-    myProj.parse(function (err) {
 
-    var testKey = myProj.pbxCreateGroup(extName, extName);
-    var classesKey = myProj.findPBXGroupKey({name: 'Action'});
-    myProj.addToPbxGroup(testKey, classesKey);
+    var actionPath = path + '/src/main/java/com/jasonette/seed/Action';
+    var assetPath = path + '/src/main/assets/file';
+    var gradle = path + '/build.gradle';
 
-    for(var i= 0; i< AllFiles.length; i++){
-        myProj.addSourceFileToGroup(AllFiles[i], extName);
+    var fs = require('fs');
+    if (!fs.existsSync(assetPath)){
+        fs.mkdirSync(assetPath);
     }
-    fs.writeFileSync(projectPath, myProj.writeSync());
-    });
+
+    for(var i = 0 ; i < AllFiles.length; i++){
+      var pieces = AllFiles[i].split('/');
+      var fileName = pieces[pieces.length-1];
+      var filePieces = fileName.split('.');
+      var fileExtension = filePieces[filePieces.length-1];
+      if(fileExtension == 'java'){
+         fs.createReadStream(AllFiles[i]).pipe(fs.createWriteStream(actionPath + '/' + fileName));
+      }
+      else if (fileExtension == 'json') {
+
+        fs.createReadStream(AllFiles[i]).pipe(fs.createWriteStream(assetPath + '/' + extName + ".json"));
+      }
+    }
 }
 
 // Simple wrapper exposing environment variables to rest of the code.
 
-// The variables have been written to `env.json` by the build process.
 var env = jetpack.cwd(__dirname).read('env.json', 'json');
 
 // Here is the starting point for your application code.
@@ -295,20 +282,19 @@ selectDirBtn.addEventListener('click', function (event) {
 electron.ipcRenderer.on('selected-directory', function (event, path) {
   var txtGitUrl = document.getElementById('repo').value;
   txtGitUrl = GetCompleteGitUrl(txtGitUrl);
-  if(!IsValidProjectDirectory(path)){
-     ShowErrorDialog("Information", "You need to select folder which have Jasonette.xcodeproj file.");
+  var projectType = document.querySelector('input[name="projectType-radio"]:checked').id;
+  if(!IsValidProjectDirectory(path, projectType)){
+     ShowErrorDialog("Information", "You need to select app folder");
   }
   else if(IsExtesnionAlreadyExists(txtGitUrl, path)) {
     ShowErrorDialog("Information", "You have already installed this extesnion.");
   }
   else{
     ShowLoading("Downloading Extension...");
-    CloneAndAddToIDE(path,txtGitUrl);
+    //CloneAndAddToXcode(path,txtGitUrl);
+    CloneAndAddToAndroid(path,txtGitUrl);
   }
 });
-
-
-
 
 });
 

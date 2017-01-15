@@ -5,7 +5,8 @@
 import os from 'os'; // native node.js module
 import { remote, ipcRenderer } from 'electron'; // native electron module
 import jetpack from 'fs-jetpack'; // module loaded from npm
-import { CloneAndAddToIDE }  from './process/process';
+import { CloneAndAddToXcode }  from './ios_process/ios_process';
+import { CloneAndAddToAndroid } from './android_process/android_process';
 import { ShowErrorDialog, IsValidProjectDirectory, IsExtesnionAlreadyExists,
          ShowLoading, IsValidGithubUrl, GetCompleteGitUrl } from './utils/utils';
 import env from './env';
@@ -28,19 +29,18 @@ selectDirBtn.addEventListener('click', function (event) {
 ipcRenderer.on('selected-directory', function (event, path) {
   var txtGitUrl = document.getElementById('repo').value;
   txtGitUrl = GetCompleteGitUrl(txtGitUrl);
-  if(!IsValidProjectDirectory(path)){
-     ShowErrorDialog("Information", "You need to select folder which have Jasonette.xcodeproj file.");
+  var projectType = document.querySelector('input[name="projectType-radio"]:checked').id;
+  if(!IsValidProjectDirectory(path, projectType)){
+     ShowErrorDialog("Information", "You need to select app folder");
   }
   else if(IsExtesnionAlreadyExists(txtGitUrl, path)) {
     ShowErrorDialog("Information", "You have already installed this extesnion.");
   }
   else{
     ShowLoading("Downloading Extension...");
-    CloneAndAddToIDE(path,txtGitUrl);
+    //CloneAndAddToXcode(path,txtGitUrl);
+    CloneAndAddToAndroid(path,txtGitUrl);
   }
 })
-
-
-
 
 });
