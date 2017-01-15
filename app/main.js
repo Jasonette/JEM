@@ -206,6 +206,7 @@ var CloneAndAddToIDE = function (path, gitUrl){
 function GetAllFilesFromPath(path)
 {
     var ValidFiles = [];
+    var AllowedFiles = ["h","m","json","plist"];
     const folderPath = `${path}`;
     console.log(folderPath);
     const fs = require('fs');
@@ -216,12 +217,10 @@ function GetAllFilesFromPath(path)
         if(arr.length > 0){
           var filetype = arr[1];
           var fileName = arr[0];
-          if(filetype == 'h' || filetype == "m" || (fileName == "jr" && filetype == "json")){
-              ValidFiles.push(`${path}/` + files[i]);
-          }
-        }
-
-      }
+          if(AllowedFiles.indexOf(filetype) > -1)
+             ValidFiles.push(`${path}/` + files[i]);
+           }
+         }
     }
 return ValidFiles;
 }
