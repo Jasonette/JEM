@@ -2,15 +2,16 @@
   <div>
     <Spinner v-show="loading"></Spinner>
     <div class='detail'>
-      <div class='col-md-8'>
-        <Md :markdown="item.readme"></Md>
-      </div>
-      <div class='col-md-4'>
-        <h1>{{item.name}}</h1>
-        <div>{{item.source}}</div>
+      <div class='col-md-4 col-md-push-8'>
+        <h1 class="text-capitalize">{{item.name}}</h1>
+        <a v-bind:href='item.source'>{{item.source}}</a>
         <div>{{item.version}}</div>
         <div>{{item.platform}}</div>
         <div>{{item.description}}</div>
+      </div>
+      <hr class="hidden-md hidden-lg">
+      <div class='col-md-8 col-md-pull-4 markdown'>
+        <Md :markdown="item.readme"></Md>
       </div>
     </div>
   </div>
@@ -44,15 +45,12 @@
   }
 </script>
 <style lang="scss">
-  a {
-    display:block;
-    padding: 20px;
-  }
-  a:hover {
-    text-decoration: none;
-    background: #f5f5f5;
-  }
 	.detail {
 		padding-top: 80px;
 	}
+  .markdown {
+    img {
+      width: 100%;
+    }
+  }
 </style>
