@@ -38,8 +38,11 @@ ipcRenderer.on('selected-directory', function (event, path) {
   }
   else{
     ShowLoading("Downloading Extension...");
-    //CloneAndAddToXcode(path,txtGitUrl);
-    CloneAndAddToAndroid(path,txtGitUrl);
+    if(projectType == "ios"){
+       CloneAndAddToXcode(path,txtGitUrl);
+    }else{
+      CloneAndAddToAndroid(path,txtGitUrl);
+    }
   }
 })
 

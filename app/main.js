@@ -125,6 +125,151 @@ function IsDirectoryExists (path, isFile, isDirectory) {
 
 var fs = require('fs');
 
+var InjectCocoapodsDependencies = function(path, dependencies){
+  var podPath = `${path}` + "/Podfile";
+  console.log(podPath);
+  ShowLoading('Syncying PodFile...');
+  var content = GetPodFileContent(podPath);
+  var injectableDependencies = GetInjectablePods(content, dependencies);
+  if(injectableDependencies.length > 0){
+      var generatedPod = GeneratePodFileContent(content, injectableDependencies);
+      UpdatePodFile(generatedPod, podPath);
+  }
+  else{
+    console.log("i don't have any dependencies");
+    ShowLoading('Completed...', true);
+  }
+};
+
+var GetDependencies = function(gitFiles){
+  for(var i in gitFiles){
+    if(gitFiles[i].endsWith("jr.json")){
+      var fs = require('fs');
+      var jsonObj = JSON.parse(fs.readFileSync(gitFiles[i], 'utf8'));
+      if(jsonObj.hasOwnProperty('dependencies'))
+         return jsonObj.dependencies;
+    }
+  }
+};
+
+function GetPodFileContent(filePath)
+{
+  var fs = require('fs');
+  var content = fs.readFileSync(filePath, 'utf8');
+  return content;
+}
+function GeneratePodFileContent(content,injection)
+{
+var string = content;
+var preString = "pod ";
+var searchString = "\n";
+var preIndex = string.lastIndexOf(preString);
+var searchIndex = preIndex + string.substring(preIndex).indexOf(searchString);
+var pre = string.substr(0, searchIndex);
+var post = string.substring(searchIndex);
+return pre + injection + post;
+
+}
+
+function GetInjectablePods(content, dependencies)
+{
+  var validDependencies = [];
+  for(var i=0; i < dependencies.length; i++){
+    if(content.indexOf(dependencies[i]) == -1){
+        validDependencies.push("\n  " + dependencies[i]);
+    }
+  }
+  return validDependencies;
+}
+
+function UpdatePodFile(content,filePath)
+{
+  fs.truncate(filePath, 0, function() {
+      fs.writeFile(filePath, content, function (err) {
+          if (err) {
+              ShowLoading('Error while writing Podfile...', true);
+              return console.log("Error writing file: " + err);
+          }
+          else {
+            console.log("I am success");
+            ExecutePodInstall(filePath);
+
+          }
+      });
+  });
+}
+function ExecutePodInstall(path){
+  ShowLoading('Installing dependencies...');
+  var shell = require('shelljs');
+  var preIndex = path.lastIndexOf('/Podfile');
+  var alteredPath = path.substring(0, preIndex);
+  console.log(alteredPath);
+
+
+  try{
+    shell.cd(alteredPath);
+    shell.exec('pod install', function(code, stdout,stderr){
+    console.log('Exit code : ', code);
+    console.log('Program output : ', stdout);
+    console.log('Program stederr : ', stderr);
+    ShowLoading('Completed...', true);
+  });
+  }
+  catch(e){
+    ShowLoading('Error while Installing dependencies...');
+  }
+
+}
+
+var CloneAndAddToXcode = function (path, gitUrl){
+    var pieces = gitUrl.replace(".git","").split("/");
+    var extensionName = pieces[pieces.length-1];
+    var fullPath = path + "/Extensions/" + extensionName;
+    console.log("Git Url : " + gitUrl);
+    console.log("Full path : " + fullPath);
+    require('simple-git')()
+        .clone(gitUrl, fullPath, function(err){
+          if(err){
+            ShowLoading("Extesnion doesn't exists.", true);
+            ShowErrorDialog("Error", "Repository doesn't exists");
+          }
+        })
+        .then(function() {
+            ShowLoading('Verifying extension...');
+            var validFiles = ["h","m","json","plist"];
+            var AllFiles = GetSpecificFilesFromPath(fullPath, validFiles);
+            var extName = GetActionName(AllFiles);
+            AddFilesInXcode(AllFiles,path,extName);
+            var dep = GetDependencies(AllFiles);
+            if(dep != null && dep.length > 0){
+              InjectCocoapodsDependencies(path, dep);
+          }else {
+            ShowLoading('Completed...', true);
+          }
+    });
+};
+
+function AddFilesInXcode(AllFiles,path,extName)
+{
+    ShowLoading('Installing extesnion...');
+    var xcode = require('node-xcode-opifex'),
+    fs = require('fs'),
+    projectSource = path + '/Jasonette.xcodeproj/project.pbxproj',
+    projectPath = projectSource,
+    myProj = xcode.project(projectSource);
+    myProj.parse(function (err) {
+
+    var testKey = myProj.pbxCreateGroup(extName, extName);
+    var classesKey = myProj.findPBXGroupKey({name: 'Action'});
+    myProj.addToPbxGroup(testKey, classesKey);
+
+    for(var i= 0; i< AllFiles.length; i++){
+        myProj.addSourceFileToGroup(AllFiles[i], extName);
+    }
+    fs.writeFileSync(projectPath, myProj.writeSync());
+    });
+}
+
 var fs$1 = require('fs');
 
 var InjectGradleDependencies = function(path, dependencies){
@@ -294,8 +439,11 @@ electron.ipcRenderer.on('selected-directory', function (event, path) {
   }
   else{
     ShowLoading("Downloading Extension...");
-    //CloneAndAddToXcode(path,txtGitUrl);
-    CloneAndAddToAndroid(path,txtGitUrl);
+    if(projectType == "ios"){
+       CloneAndAddToXcode(path,txtGitUrl);
+    }else{
+      CloneAndAddToAndroid(path,txtGitUrl);
+    }
   }
 });
 
