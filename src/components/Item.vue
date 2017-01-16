@@ -12,7 +12,7 @@
     props: ['item']
   }
 </script>
-<style scoped>
+<style scoped lang="scss">
   .item a{
     display:block;
     padding: 5px 20px !important;

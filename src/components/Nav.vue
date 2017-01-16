@@ -37,7 +37,7 @@
 		}
 	}
 </script>
-<style scoped>
+<style scoped lang="scss">
   nav.navbar{
     border-radius: 0 !important;
 		-webkit-box-shadow: 0px 1px 8px 0px rgba(240,237,240,1);

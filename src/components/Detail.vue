@@ -43,16 +43,16 @@
     }
   }
 </script>
-<style>
-  a{
+<style lang="scss">
+  a {
     display:block;
     padding: 20px;
   }
-  a:hover{
+  a:hover {
     text-decoration: none;
     background: #f5f5f5;
   }
-	.detail{
+	.detail {
 		padding-top: 80px;
 	}
 </style>

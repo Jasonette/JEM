@@ -44,6 +44,6 @@ export default {
 }
 </script>
 
-<style>
-@import '../node_modules/bootstrap/dist/css/bootstrap.css'
+<style lang="sass">
+@import '../node_modules/bootstrap/dist/css/bootstrap.css';
 </style>
