@@ -44,15 +44,18 @@ function AddFilesInAndroidStudio(AllFiles,extesnionPath,extName,path)
 
     for(var i = 0 ; i < AllFiles.length; i++){
       var pieces = AllFiles[i].split('/');
-      var fileName = pieces[pieces.length-1];
-      var filePieces = fileName.split('.');
+      var fileFullName = pieces[pieces.length-1];
+      var filePieces = fileFullName.split('.');
       var fileExtension = filePieces[filePieces.length-1];
+      var fileName = filePieces[0];
       if(fileExtension == 'java'){
-         fs.createReadStream(AllFiles[i]).pipe(fs.createWriteStream(actionPath + '/' + fileName));
+         fs.createReadStream(AllFiles[i]).pipe(fs.createWriteStream(actionPath + '/' + fileFullName));
+      }
+      else if (fileName == "jr" && fileExtension == 'json') {
+        fs.createReadStream(AllFiles[i]).pipe(fs.createWriteStream(assetPath + '/' + extName + ".json"));
       }
       else if (fileExtension == 'json') {
-
-        fs.createReadStream(AllFiles[i]).pipe(fs.createWriteStream(assetPath + '/' + extName + ".json"));
+        fs.createReadStream(AllFiles[i]).pipe(fs.createWriteStream(assetPath + '/' + fileFullName));
       }
     }
 }
