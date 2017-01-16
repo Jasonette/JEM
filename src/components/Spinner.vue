@@ -5,7 +5,7 @@
     <div class="bounce3"></div>
   </div>
 </template>
-<style scoped>
+<style lang="scss">
   .spinner {
     margin: 100px auto 0;
     width: 70px;

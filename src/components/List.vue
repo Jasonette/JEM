@@ -13,7 +13,7 @@
     }
   }
 </script>
-<style>
+<style lang="scss">
 .list{
 	position: fixed;
 	top: 52px;
