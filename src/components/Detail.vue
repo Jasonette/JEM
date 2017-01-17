@@ -5,7 +5,7 @@
       <div class='col-md-4 col-md-push-8'>
         <h1 class="text-capitalize">{{item.name}}</h1>
         <a v-bind:href='item.original_url'>{{item.original_url}}</a>
-        <div>{{item.version}}</div>
+        <div>{{item.v}}</div>
         <div>{{item.platform}}</div>
         <div>{{item.description}}</div>
       </div>
