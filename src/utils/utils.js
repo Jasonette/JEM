@@ -4,12 +4,14 @@ export var ShowErrorDialog = function(title, message){
   remote.dialog.showErrorBox(title, message);
 }
 
-export var IsValidProjectDirectory = function(path){
+    export var IsValidProjectDirectory = function(path, projectType){
     const fs = require('fs');
     const folderPath = `${path}`;
+    var projectFile = 'Jasonette.xcodeproj';
+    if(projectType == 'android'){ projectFile = 'build.gradle'; }
     var files = fs.readdirSync(folderPath);
     for(var i in files){
-      if(files[i] == 'Jasonette.xcodeproj')
+      if(files[i] == projectFile)
         return true;
     }
     return false;
@@ -62,7 +64,38 @@ export var GetCompleteGitUrl = function(url){
       return "http://github.com/" + url;
   }
 }
-
+export var GetActionName = function(gitFiles)
+{
+    for(var i in gitFiles){
+      if(gitFiles[i].endsWith("jr.json")){
+        var fs = require('fs');
+        var jsonObj = JSON.parse(fs.readFileSync(gitFiles[i], 'utf8'));
+        if(jsonObj.hasOwnProperty('name'))
+           return "$" + jsonObj.name;
+      }
+    }
+    return "$" + Math.random().toString(36).substring(7);
+}
+export var GetSpecificFilesFromPath = function(path, allowedFiles)
+{
+    var ValidFiles = [];
+    const folderPath = `${path}`;
+    console.log(folderPath);
+    const fs = require('fs');
+    var files = fs.readdirSync(folderPath);
+    for (var i in files) {
+      if (files[i].indexOf(".") !=-1) {
+        var arr = files[i].split('.');
+        if(arr.length > 0){
+          var filetype = arr[1];
+          var fileName = arr[0];
+          if(allowedFiles.indexOf(filetype) > -1)
+             ValidFiles.push(`${path}/` + files[i]);
+           }
+         }
+    }
+return ValidFiles;
+}
 function IsDirectoryExists (path, isFile, isDirectory) {
    try {
      const fs = require('fs');

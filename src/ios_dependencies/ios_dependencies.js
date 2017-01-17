@@ -17,6 +17,17 @@ export var InjectCocoapodsDependencies = function(path, dependencies){
   }
 }
 
+export var GetDependencies = function(gitFiles, extName){
+  for(var i in gitFiles){
+    if(gitFiles[i].endsWith(extName + ".json")){
+      var fs = require('fs');
+      var jsonObj = JSON.parse(fs.readFileSync(gitFiles[i], 'utf8'));
+      if(jsonObj.hasOwnProperty('dependencies'))
+         return jsonObj.dependencies;
+    }
+  }
+}
+
 function GetPodFileContent(filePath)
 {
   var fs = require('fs');
@@ -73,7 +84,7 @@ function ExecutePodInstall(path){
 
   try{
     shell.cd(alteredPath);
-    shell.exec('pod install', function(code, stdout,stderr){
+    shell.exec('/usr/local/bin/pod install', function(code, stdout,stderr){
     console.log('Exit code : ', code);
     console.log('Program output : ', stdout);
     console.log('Program stederr : ', stderr);
