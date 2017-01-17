@@ -4,10 +4,11 @@
     <div class='detail'>
       <div class='col-md-4 col-md-push-8'>
         <h1 class="text-capitalize">{{item.name}}</h1>
-        <a v-bind:href='item.original_url'>{{item.original_url}}</a>
-        <div>{{item.v}}</div>
-        <div>{{item.platform}}</div>
-        <div>{{item.description}}</div>
+        <h4>{{item.description}}</h4>
+        <h4>{{item.v}}</h4>
+        <h4>{{item.platform}}</h4>
+        <p><a v-bind:href='item.original_url'>{{item.original_url}}</a></p>
+        <button class="btn btn-primary btn-lg" type="button">Install</button>
       </div>
       <hr class="hidden-md hidden-lg">
       <div class='col-md-8 col-md-pull-4 markdown'>
