@@ -8,7 +8,7 @@
         <h4>{{item.v}}</h4>
         <h4>{{item.platform}}</h4>
         <p><a v-bind:href='item.original_url'>{{item.original_url}}</a></p>
-        <button class="btn btn-primary btn-lg" type="button">Install</button>
+        <button id="btnInstall" class="btn btn-primary btn-lg" type="button" :url="item.original_url" :platform="item.platform" >Install</button>
       </div>
       <hr class="hidden-md hidden-lg">
       <div class='col-md-8 col-md-pull-4 markdown'>
