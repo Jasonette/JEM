@@ -19,14 +19,35 @@ export var CloneAndAddToXcode = function (path, gitUrl){
             var validFiles = ["h","m","json","plist"];
             var AllFiles = GetSpecificFilesFromPath(fullPath, validFiles);
             var extName = GetActionName(AllFiles);
+            AllFiles = renameJrJsonFile(AllFiles, extName);
             AddFilesInXcode(AllFiles,path,extName);
-            var dep = GetDependencies(AllFiles);
+            var dep = GetDependencies(AllFiles,extName);
             if(dep != null && dep.length > 0){
               InjectCocoapodsDependencies(path, dep);
           }else {
             ShowLoading('Completed...', true);
           }
     });
+}
+
+function renameJrJsonFile(AllFiles, extName)
+{
+  var updatedFiles = [];
+  var renameFilePath = "";
+  for(var i = 0; i < AllFiles.length; i++)
+  {
+    if(AllFiles[i].indexOf('jr.json') != -1)
+    {
+        var fs = require('fs');
+        renameFilePath = AllFiles[i].replace("jr.json", extName + ".json");
+        fs.renameSync(AllFiles[i], renameFilePath);
+    }
+    else {
+      renameFilePath = AllFiles[i];
+    }
+    updatedFiles.push(renameFilePath);
+  }
+  return updatedFiles;
 }
 
 function AddFilesInXcode(AllFiles,path,extName)

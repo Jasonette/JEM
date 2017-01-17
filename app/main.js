@@ -141,9 +141,9 @@ var InjectCocoapodsDependencies = function(path, dependencies){
   }
 };
 
-var GetDependencies = function(gitFiles){
+var GetDependencies = function(gitFiles, extName){
   for(var i in gitFiles){
-    if(gitFiles[i].endsWith("jr.json")){
+    if(gitFiles[i].endsWith(extName + ".json")){
       var fs = require('fs');
       var jsonObj = JSON.parse(fs.readFileSync(gitFiles[i], 'utf8'));
       if(jsonObj.hasOwnProperty('dependencies'))
@@ -208,7 +208,7 @@ function ExecutePodInstall(path){
 
   try{
     shell.cd(alteredPath);
-    shell.exec('pod install', function(code, stdout,stderr){
+    shell.exec('/usr/local/bin/pod install', function(code, stdout,stderr){
     console.log('Exit code : ', code);
     console.log('Program output : ', stdout);
     console.log('Program stederr : ', stderr);
@@ -239,8 +239,9 @@ var CloneAndAddToXcode = function (path, gitUrl){
             var validFiles = ["h","m","json","plist"];
             var AllFiles = GetSpecificFilesFromPath(fullPath, validFiles);
             var extName = GetActionName(AllFiles);
+            AllFiles = renameJrJsonFile(AllFiles, extName);
             AddFilesInXcode(AllFiles,path,extName);
-            var dep = GetDependencies(AllFiles);
+            var dep = GetDependencies(AllFiles,extName);
             if(dep != null && dep.length > 0){
               InjectCocoapodsDependencies(path, dep);
           }else {
@@ -248,6 +249,26 @@ var CloneAndAddToXcode = function (path, gitUrl){
           }
     });
 };
+
+function renameJrJsonFile(AllFiles, extName)
+{
+  var updatedFiles = [];
+  var renameFilePath = "";
+  for(var i = 0; i < AllFiles.length; i++)
+  {
+    if(AllFiles[i].indexOf('jr.json') != -1)
+    {
+        var fs = require('fs');
+        renameFilePath = AllFiles[i].replace("jr.json", extName + ".json");
+        fs.renameSync(AllFiles[i], renameFilePath);
+    }
+    else {
+      renameFilePath = AllFiles[i];
+    }
+    updatedFiles.push(renameFilePath);
+  }
+  return updatedFiles;
+}
 
 function AddFilesInXcode(AllFiles,path,extName)
 {
