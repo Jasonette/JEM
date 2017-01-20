@@ -53,10 +53,10 @@ var ShowLoading = function(message, hide = false){
 var IsValidGithubUrl = function(url){
   var isGithubUrl = require('is-github-url');
   if (url.indexOf("http://github.com/") !=-1){
-      return isGithubUrl(url, { strict: true });
+      return isGithubUrl(url, { strict: false });
   }
   else {
-      return isGithubUrl("http://github.com/" + url, { strict: true });
+      return isGithubUrl("http://github.com/" + url, { strict: false });
   }
 };
 var GetCompleteGitUrl = function(url){
@@ -429,30 +429,34 @@ function AddFilesInAndroidStudio(AllFiles,extesnionPath,extName,path)
 
 // Simple wrapper exposing environment variables to rest of the code.
 
+// The variables have been written to `env.json` by the build process.
 var env = jetpack.cwd(__dirname).read('env.json', 'json');
 
 // Here is the starting point for your application code.
 // All stuff below is just to show you how it works. You can delete all of it.
 
 // Use new ES6 modules syntax for everything.
+var gitUrl = "";
+var extesnionType = "";
+
 document.addEventListener('DOMContentLoaded', function () {
 
-const selectDirBtn = document.getElementById('btnInstall');
-selectDirBtn.addEventListener('click', function (event) {
+document.querySelector('body').addEventListener('click', function (event) {
 
-  const txtGitUrl = document.getElementById('repo').value;
-  if(!IsValidGithubUrl(txtGitUrl)){
-    ShowErrorDialog("Information", "Please enter valid github repositoru url.");
-  }
-  else{
-    electron.ipcRenderer.send('open-file-dialog');
+  if(event.target.id == 'btnInstall'){
+     gitUrl = event.target.getAttribute('url');
+     extesnionType = event.target.getAttribute('platform');
+    if(!IsValidGithubUrl(gitUrl)){
+      ShowErrorDialog("Information", "Incorrect extesnion url.");
+    }
+    else{
+      electron.ipcRenderer.send('open-file-dialog');
+    }
   }
 });
 electron.ipcRenderer.on('selected-directory', function (event, path) {
-  var txtGitUrl = document.getElementById('repo').value;
-  txtGitUrl = GetCompleteGitUrl(txtGitUrl);
-  var projectType = document.querySelector('input[name="projectType-radio"]:checked').id;
-  if(!IsValidProjectDirectory(path, projectType)){
+  gitUrl = GetCompleteGitUrl(gitUrl);
+  if(!IsValidProjectDirectory(path, extesnionType)){
      ShowErrorDialog("Information", "You need to select app folder");
   }
   else if(IsExtesnionAlreadyExists(txtGitUrl, path)) {
@@ -460,7 +464,7 @@ electron.ipcRenderer.on('selected-directory', function (event, path) {
   }
   else{
     ShowLoading("Downloading Extension...");
-    if(projectType == "ios"){
+    if(extesnionType == "ios"){
        CloneAndAddToXcode(path,txtGitUrl);
     }else{
       CloneAndAddToAndroid(path,txtGitUrl);

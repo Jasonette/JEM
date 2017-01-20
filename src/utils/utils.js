@@ -47,10 +47,10 @@ export var ShowLoading = function(message, hide = false){
 export var IsValidGithubUrl = function(url){
   var isGithubUrl = require('is-github-url');
   if (url.indexOf("http://github.com/") !=-1){
-      return isGithubUrl(url, { strict: true });
+      return isGithubUrl(url, { strict: false });
   }
   else {
-      return isGithubUrl("http://github.com/" + url, { strict: true });
+      return isGithubUrl("http://github.com/" + url, { strict: false });
   }
 }
 export var GetCompleteGitUrl = function(url){

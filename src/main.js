@@ -11,26 +11,27 @@ import { ShowErrorDialog, IsValidProjectDirectory, IsExtesnionAlreadyExists,
          ShowLoading, IsValidGithubUrl, GetCompleteGitUrl } from './utils/utils';
 import env from './env';
 
-
+var gitUrl = "";
+var extesnionType = "";
 
 document.addEventListener('DOMContentLoaded', function () {
 
-const selectDirBtn = document.getElementById('btnInstall')
-selectDirBtn.addEventListener('click', function (event) {
+document.querySelector('body').addEventListener('click', function (event) {
 
-  const txtGitUrl = document.getElementById('repo').value;
-  if(!IsValidGithubUrl(txtGitUrl)){
-    ShowErrorDialog("Information", "Please enter valid github repositoru url.");
-  }
-  else{
-    ipcRenderer.send('open-file-dialog');
+  if(event.target.id == 'btnInstall'){
+     gitUrl = event.target.getAttribute('url');
+     extesnionType = event.target.getAttribute('platform');
+    if(!IsValidGithubUrl(gitUrl)){
+      ShowErrorDialog("Information", "Incorrect extesnion url.");
+    }
+    else{
+      ipcRenderer.send('open-file-dialog');
+    }
   }
 })
 ipcRenderer.on('selected-directory', function (event, path) {
-  var txtGitUrl = document.getElementById('repo').value;
-  txtGitUrl = GetCompleteGitUrl(txtGitUrl);
-  var projectType = document.querySelector('input[name="projectType-radio"]:checked').id;
-  if(!IsValidProjectDirectory(path, projectType)){
+  gitUrl = GetCompleteGitUrl(gitUrl);
+  if(!IsValidProjectDirectory(path, extesnionType)){
      ShowErrorDialog("Information", "You need to select app folder");
   }
   else if(IsExtesnionAlreadyExists(txtGitUrl, path)) {
@@ -38,7 +39,7 @@ ipcRenderer.on('selected-directory', function (event, path) {
   }
   else{
     ShowLoading("Downloading Extension...");
-    if(projectType == "ios"){
+    if(extesnionType == "ios"){
        CloneAndAddToXcode(path,txtGitUrl);
     }else{
       CloneAndAddToAndroid(path,txtGitUrl);
