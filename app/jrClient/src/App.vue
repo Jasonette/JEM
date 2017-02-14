@@ -43,7 +43,3 @@ export default {
 	}
 }
 </script>
-
-<style lang="sass">
-@import '../node_modules/bootstrap/dist/css/bootstrap.css';
-</style>

@@ -23,17 +23,19 @@ var ShowLoading = function(message, hide = false){
   if(!hide){
     document.getElementById('btnInstall').disabled = true;
     document.getElementsByClassName('spinner')[0].style.display = "inline-block";
-    document.getElementsByClassName('text-capitalize')[0].innerHTML = message;
+    document.getElementsByClassName('message')[0].style.display = "inline-block";
+    document.getElementsByClassName('message')[0].innerHTML = message;
   }
   else {
 
     setTimeout(function(){
-      document.getElementsByClassName('text-capitalize')[0].innerHTML = message;
+      document.getElementsByClassName('message')[0].innerHTML = message;
     }, 2000);
 
     setTimeout(function(){
       document.getElementById('btnInstall').disabled = false;
       document.getElementsByClassName('spinner')[0].style.display = "None";
+      document.getElementsByClassName('message')[0].style.display = "None";
     }, 5000);
 
   }

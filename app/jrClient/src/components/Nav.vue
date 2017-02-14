@@ -1,6 +1,11 @@
 <template>
   <nav class="navbar">
     <div class="container">
+
+    <div class="back-container" v-if="['detail'].indexOf($route.name) > -1">
+        <router-link :to="{name: 'home'}" class='navbar-brand'><span class="glyphicon glyphicon-circle-arrow-left"></span></router-link>
+    </div>
+
       <div class="navbar-header">
 				<form class="navbar-form">
 					<router-link :to="{name: 'home'}" class='navbar-brand'>{ ˃̵̑ᴥ˂̵̑}</router-link>
@@ -84,4 +89,9 @@
 		border-radius: 0;
 		border:none;
 	}
+  .back-container{
+    position: absolute;
+    left: 20px;
+    top: 20%;
+  }
 </style>

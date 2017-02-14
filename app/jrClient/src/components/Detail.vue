@@ -9,6 +9,7 @@
         <h4>{{item.platform}}</h4>
         <p><a v-bind:href='item.original_url'>{{item.original_url}}</a></p>
         <button id="btnInstall" class="btn btn-primary btn-lg" type="button" :url="item.original_url" :platform="item.platform" >Install</button>
+        <p class="message"></p>
       </div>
       <hr class="hidden-md hidden-lg">
       <div class='col-md-8 col-md-pull-4 markdown'>
@@ -53,5 +54,10 @@
     img {
       width: 100%;
     }
+  }
+  .message {
+    padding-top: 18px;
+    font-size: 20px;
+    display: none;
   }
 </style>
