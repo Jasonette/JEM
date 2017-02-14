@@ -16,13 +16,22 @@ import { readSettings }  from './userData/userData';
 var gitUrl = "";
 var extesnionType = "";
 
+
+
 document.addEventListener('DOMContentLoaded', function () {
 
 document.querySelector('body').addEventListener('click', function (event) {
 
+  extesnionType = event.target.getAttribute('platform');
+
   if(event.target.id == 'btnInstall'){
-     gitUrl = event.target.getAttribute('url');
-     extesnionType = event.target.getAttribute('platform');
+    if(extesnionType != readSettings('project-type')){
+      ShowErrorDialog("Information", "You can't install " + extesnionType + " extesnion on " + readSettings('project-type') + " project.");
+
+    }
+    else {
+      gitUrl = event.target.getAttribute('url');
+
     if(!IsValidGithubUrl(gitUrl)){
       ShowErrorDialog("Information", "Incorrect extesnion url.");
     }
@@ -43,6 +52,7 @@ document.querySelector('body').addEventListener('click', function (event) {
         }
     }
   }
+}
 })
 
 
