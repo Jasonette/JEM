@@ -11,6 +11,8 @@ import { ShowErrorDialog, IsValidProjectDirectory, IsExtesnionAlreadyExists,
          ShowLoading, IsValidGithubUrl, GetCompleteGitUrl } from './utils/utils';
 import env from './env';
 
+import { readSettings }  from './userData/userData';
+
 var gitUrl = "";
 var extesnionType = "";
 
@@ -25,26 +27,23 @@ document.querySelector('body').addEventListener('click', function (event) {
       ShowErrorDialog("Information", "Incorrect extesnion url.");
     }
     else{
-      ipcRenderer.send('open-file-dialog');
+        gitUrl = GetCompleteGitUrl(gitUrl);
+        var path =  readSettings('project-path');
+        console.log("Selected Path : " + path);
+        if(IsExtesnionAlreadyExists(gitUrl, path)) {
+          ShowErrorDialog("Information", "You have already installed this extesnion.");
+        }
+        else {
+          ShowLoading("Downloading Extension...");
+          if(extesnionType == "ios"){
+             CloneAndAddToXcode(path,gitUrl);
+          }else{
+            CloneAndAddToAndroid(path,gitUrl);
+          }
+        }
     }
   }
 })
-ipcRenderer.on('selected-directory', function (event, path) {
-  gitUrl = GetCompleteGitUrl(gitUrl);
-  if(!IsValidProjectDirectory(path, extesnionType)){
-     ShowErrorDialog("Information", "You need to select app folder");
-  }
-  else if(IsExtesnionAlreadyExists(txtGitUrl, path)) {
-    ShowErrorDialog("Information", "You have already installed this extesnion.");
-  }
-  else{
-    ShowLoading("Downloading Extension...");
-    if(extesnionType == "ios"){
-       CloneAndAddToXcode(path,txtGitUrl);
-    }else{
-      CloneAndAddToAndroid(path,txtGitUrl);
-    }
-  }
-})
+
 
 });

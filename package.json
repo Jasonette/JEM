@@ -31,6 +31,7 @@
   "dependencies": {
     "fs-jetpack": "^0.10.2",
     "is-github-url": "^1.2.2",
+    "nconf": "^0.8.4",
     "node-xcode-opifex": "^0.8.5",
     "shelljs": "^0.7.6",
     "simple-git": "^1.65.0"

@@ -10,18 +10,7 @@ var ShowErrorDialog = function(title, message){
   electron.remote.dialog.showErrorBox(title, message);
 };
 
-    var IsValidProjectDirectory = function(path, projectType){
-    const fs = require('fs');
-    const folderPath = `${path}`;
-    var projectFile = 'Jasonette.xcodeproj';
-    if(projectType == 'android'){ projectFile = 'build.gradle'; }
-    var files = fs.readdirSync(folderPath);
-    for(var i in files){
-      if(files[i] == projectFile)
-        return true;
-    }
-    return false;
-};
+    
 
 var IsExtesnionAlreadyExists = function(gitUrl, path){
   var pieces = gitUrl.replace(".git","").split("/");
@@ -33,18 +22,18 @@ var IsExtesnionAlreadyExists = function(gitUrl, path){
 var ShowLoading = function(message, hide = false){
   if(!hide){
     document.getElementById('btnInstall').disabled = true;
-    document.getElementById('loader').style.display = "inline-block";
-    document.getElementById('loadingText').innerHTML = message;
+    document.getElementsByClassName('spinner')[0].style.display = "inline-block";
+    document.getElementsByClassName('text-capitalize')[0].innerHTML = message;
   }
   else {
 
     setTimeout(function(){
-      document.getElementById('loadingText').innerHTML = message;
+      document.getElementsByClassName('text-capitalize')[0].innerHTML = message;
     }, 2000);
 
     setTimeout(function(){
       document.getElementById('btnInstall').disabled = false;
-      document.getElementById('loader').style.display = "None";
+      document.getElementsByClassName('spinner')[0].style.display = "None";
     }, 5000);
 
   }
@@ -432,6 +421,19 @@ function AddFilesInAndroidStudio(AllFiles,extesnionPath,extName,path)
 // The variables have been written to `env.json` by the build process.
 var env = jetpack.cwd(__dirname).read('env.json', 'json');
 
+var nconf = require('nconf').file({file: getUserHome() + '/sound-machine-config.json'});
+
+
+
+var readSettings = function(settingKey) {
+    nconf.load();
+    return nconf.get(settingKey);
+};
+
+function getUserHome() {
+    return process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+}
+
 // Here is the starting point for your application code.
 // All stuff below is just to show you how it works. You can delete all of it.
 
@@ -450,27 +452,24 @@ document.querySelector('body').addEventListener('click', function (event) {
       ShowErrorDialog("Information", "Incorrect extesnion url.");
     }
     else{
-      electron.ipcRenderer.send('open-file-dialog');
+        gitUrl = GetCompleteGitUrl(gitUrl);
+        var path =  readSettings('project-path');
+        console.log("Selected Path : " + path);
+        if(IsExtesnionAlreadyExists(gitUrl, path)) {
+          ShowErrorDialog("Information", "You have already installed this extesnion.");
+        }
+        else {
+          ShowLoading("Downloading Extension...");
+          if(extesnionType == "ios"){
+             CloneAndAddToXcode(path,gitUrl);
+          }else{
+            CloneAndAddToAndroid(path,gitUrl);
+          }
+        }
     }
   }
 });
-electron.ipcRenderer.on('selected-directory', function (event, path) {
-  gitUrl = GetCompleteGitUrl(gitUrl);
-  if(!IsValidProjectDirectory(path, extesnionType)){
-     ShowErrorDialog("Information", "You need to select app folder");
-  }
-  else if(IsExtesnionAlreadyExists(txtGitUrl, path)) {
-    ShowErrorDialog("Information", "You have already installed this extesnion.");
-  }
-  else{
-    ShowLoading("Downloading Extension...");
-    if(extesnionType == "ios"){
-       CloneAndAddToXcode(path,txtGitUrl);
-    }else{
-      CloneAndAddToAndroid(path,txtGitUrl);
-    }
-  }
-});
+
 
 });
 

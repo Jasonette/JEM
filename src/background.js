@@ -15,6 +15,7 @@ import createWindow from './helpers/window';
 import env from './env';
 
 var mainWindow;
+var jrClientWindow = null;
 
 var setApplicationMenu = function () {
     var menus = [editMenuTemplate];
@@ -35,21 +36,50 @@ if (env.name !== 'production') {
 app.on('ready', function () {
     setApplicationMenu();
 
-    var mainWindow = createWindow('main', {
-        width: 500,
+     mainWindow = createWindow('main', {
+        width: 800,
         height: 800,
         resizable: true
     });
 
     mainWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'jrClient/docs/index.html'),
+        pathname: path.join(__dirname, 'index.html'),
         protocol: 'file:',
         slashes: true
     }));
 
-    if (env.name === 'development') {
+  //  if (env.name === 'development') {
         mainWindow.openDevTools();
-    }
+  //  }
+});
+
+
+
+ipcMain.on('open-Jr-Client', function(event) {
+
+  mainWindow.hide();
+
+  if(jrClientWindow){
+     return;
+   }
+
+   var jrClientWindow = createWindow('jrClientWindow', {
+       width: 800,
+       height: 800,
+       resizable: true
+   });
+
+   jrClientWindow.loadURL(url.format({
+       pathname: path.join(__dirname, 'jrClient/docs/index.html'),
+       protocol: 'file:',
+       slashes: true
+   }));
+
+   jrClientWindow.openDevTools();
+
+   jrClientWindow.on('closed', function() {
+     jrClientWindow = null;
+   });
 });
 
 app.on('window-all-closed', function () {

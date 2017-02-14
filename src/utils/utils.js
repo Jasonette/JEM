@@ -27,18 +27,18 @@ export var IsExtesnionAlreadyExists = function(gitUrl, path){
 export var ShowLoading = function(message, hide = false){
   if(!hide){
     document.getElementById('btnInstall').disabled = true;
-    document.getElementById('loader').style.display = "inline-block";
-    document.getElementById('loadingText').innerHTML = message;
+    document.getElementsByClassName('spinner')[0].style.display = "inline-block";
+    document.getElementsByClassName('text-capitalize')[0].innerHTML = message;
   }
   else {
 
     setTimeout(function(){
-      document.getElementById('loadingText').innerHTML = message;
+      document.getElementsByClassName('text-capitalize')[0].innerHTML = message;
     }, 2000);
 
     setTimeout(function(){
       document.getElementById('btnInstall').disabled = false;
-      document.getElementById('loader').style.display = "None";
+      document.getElementsByClassName('spinner')[0].style.display = "None";
     }, 5000);
 
   }
