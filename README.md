@@ -31,7 +31,7 @@ An app that makes it easy to integrate [Jasonette extensions](http://docs.jasone
 ## How to add your extensions to the registry
 
 1. Write an extension [following the convention](http://docs.jasonette.com/advanced/#extension)
-2. Extract out only the extension-related files from your XCode or Android project and put it into a folder. **Extensions can ONLY contain one class at a time.** Write a separate extension if you want another feature.
+2. Extract out only the extension-related files from your XCode or Android project and put it into a folder. **Extensions can ONLY contain one class at a time.** Write a separate extension if you want another class. If the features are related you can still fit it into a single class as multiple methods anyway.
 3. Also add a config file named `jr.json` in your folder. [Learn how to write jr.json](#jrjson)
 4. Push to your Github
 5. Go to [http://jasonregistry.netlify.com](http://jasonregistry.netlify.com/) and register your Github repo
