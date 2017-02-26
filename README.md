@@ -16,7 +16,7 @@ An app that makes it easy to integrate [Jasonette extensions](http://docs.jasone
 
 1. This is pretty much functional for both iOS and Android.
 2. But understand that it's still work in progress. There are some bugs that needs fixing, so before you try this out make sure to back up the project.
-3. If you run into a problem, please open a issue.
+3. If you run into a problem, please [open an issue](https://github.com/Jasonette/JEM/issues/new).
 
 <br>
 
