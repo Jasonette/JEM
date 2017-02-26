@@ -2,6 +2,8 @@
 
 An app that makes it easy to integrate [Jasonette extensions](http://docs.jasonette.com/advanced/#extension) into iOS and Android projects
 
+![screenshot](screenshot.png)
+
 ## Usage
 
 1. Clone this repo
