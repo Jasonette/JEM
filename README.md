@@ -1,6 +1,6 @@
 # Jasonette Extension Manager 
 
-An app that makes it easy to integrate [Jasonette extensions](http://docs.jasonette.com/advanced/#extension) into iOS and Android projects
+An app that makes it easy to integrate [Jasonette extensions](http://docs.jasonette.com/advanced/#extension) into Jasonette projects (for both iOS and Android)
 
 ![screenshot](screenshot.png)
 
