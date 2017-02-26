@@ -425,7 +425,10 @@ var env = jetpack.cwd(__dirname).read('env.json', 'json');
 
 var nconf = require('nconf').file({file: getUserHome() + '/sound-machine-config.json'});
 
-
+var saveSettings = function(settingKey, settingValue) {
+    nconf.set(settingKey, settingValue);
+    nconf.save();
+};
 
 var readSettings = function(settingKey) {
     nconf.load();
@@ -436,53 +439,35 @@ function getUserHome() {
     return process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
 }
 
-// Here is the starting point for your application code.
-// All stuff below is just to show you how it works. You can delete all of it.
-
-// Use new ES6 modules syntax for everything.
-var gitUrl = "";
-var extesnionType = "";
-
-
-
 document.addEventListener('DOMContentLoaded', function () {
-
-document.querySelector('body').addEventListener('click', function (event) {
-
-  extesnionType = event.target.getAttribute('platform');
-
-  if(event.target.id == 'btnInstall'){
-    if(extesnionType != readSettings('project-type')){
-      ShowErrorDialog("Information", "You can't install " + extesnionType + " extesnion on " + readSettings('project-type') + " project.");
-
+  document.querySelector('body').addEventListener('click', function (event) {
+    if(event.target.id == 'btnInstall'){
+      electron.ipcRenderer.send('open-file-dialog');
     }
-    else {
-      gitUrl = event.target.getAttribute('url');
+  });
+  electron.ipcRenderer.on('selected-directory', function (event, path) {
+    saveSettings('project-path', path);
+    const btnInstall = document.getElementById('btnInstall');
+    var gitUrl = btnInstall.getAttribute('url');
+    const platform = btnInstall.getAttribute('platform');
 
     if(!IsValidGithubUrl(gitUrl)){
-      ShowErrorDialog("Information", "Incorrect extesnion url.");
-    }
-    else{
-        gitUrl = GetCompleteGitUrl(gitUrl);
-        var path =  readSettings('project-path');
-        console.log("Selected Path : " + path);
-        if(IsExtesnionAlreadyExists(gitUrl, path)) {
-          ShowErrorDialog("Information", "You have already installed this extesnion.");
+      ShowErrorDialog("Information", "Incorrect extension url.");
+    } else {
+      gitUrl = GetCompleteGitUrl(gitUrl);
+      var path =  readSettings('project-path');
+      if(IsExtesnionAlreadyExists(gitUrl, path)) {
+        ShowErrorDialog("Information", "You have already installed this extension.");
+      } else {
+        ShowLoading("Downloading Extension...");
+        if(platform == "ios"){
+          CloneAndAddToXcode(path,gitUrl);
+        } else {
+          CloneAndAddToAndroid(path,gitUrl);
         }
-        else {
-          ShowLoading("Downloading Extension...");
-          if(extesnionType == "ios"){
-             CloneAndAddToXcode(path,gitUrl);
-          }else{
-            CloneAndAddToAndroid(path,gitUrl);
-          }
-        }
+      }
     }
-  }
-}
-});
-
-
+  });
 });
 
 }());
