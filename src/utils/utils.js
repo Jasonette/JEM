@@ -27,18 +27,20 @@ export var IsExtesnionAlreadyExists = function(gitUrl, path){
 export var ShowLoading = function(message, hide = false){
   if(!hide){
     document.getElementById('btnInstall').disabled = true;
-    document.getElementById('loader').style.display = "inline-block";
-    document.getElementById('loadingText').innerHTML = message;
+    document.getElementsByClassName('spinner')[0].style.display = "inline-block";
+    document.getElementsByClassName('message')[0].style.display = "inline-block";
+    document.getElementsByClassName('message')[0].innerHTML = message;
   }
   else {
 
     setTimeout(function(){
-      document.getElementById('loadingText').innerHTML = message;
+      document.getElementsByClassName('message')[0].innerHTML = message;
     }, 2000);
 
     setTimeout(function(){
       document.getElementById('btnInstall').disabled = false;
-      document.getElementById('loader').style.display = "None";
+      document.getElementsByClassName('spinner')[0].style.display = "None";
+      document.getElementsByClassName('message')[0].style.display = "None";
     }, 5000);
 
   }
@@ -47,10 +49,10 @@ export var ShowLoading = function(message, hide = false){
 export var IsValidGithubUrl = function(url){
   var isGithubUrl = require('is-github-url');
   if (url.indexOf("http://github.com/") !=-1){
-      return isGithubUrl(url, { strict: true });
+      return isGithubUrl(url, { strict: false });
   }
   else {
-      return isGithubUrl("http://github.com/" + url, { strict: true });
+      return isGithubUrl("http://github.com/" + url, { strict: false });
   }
 }
 export var GetCompleteGitUrl = function(url){

@@ -1,49 +1,41 @@
-// Here is the starting point for your application code.
-// All stuff below is just to show you how it works. You can delete all of it.
-
-// Use new ES6 modules syntax for everything.
-import os from 'os'; // native node.js module
-import { remote, ipcRenderer } from 'electron'; // native electron module
-import jetpack from 'fs-jetpack'; // module loaded from npm
-import { CloneAndAddToXcode }  from './ios_process/ios_process';
-import { CloneAndAddToAndroid } from './android_process/android_process';
+import os from 'os' // native node.js module
+import { remote, ipcRenderer } from 'electron' // native electron module
+import jetpack from 'fs-jetpack' // module loaded from npm
+import { CloneAndAddToXcode }  from './ios_process/ios_process'
+import { CloneAndAddToAndroid } from './android_process/android_process'
 import { ShowErrorDialog, IsValidProjectDirectory, IsExtesnionAlreadyExists,
-         ShowLoading, IsValidGithubUrl, GetCompleteGitUrl } from './utils/utils';
-import env from './env';
+         ShowLoading, IsValidGithubUrl, GetCompleteGitUrl } from './utils/utils'
+import env from './env'
 
-
+import { saveSettings, readSettings }  from './userData/userData'
 
 document.addEventListener('DOMContentLoaded', function () {
-
-const selectDirBtn = document.getElementById('btnInstall')
-selectDirBtn.addEventListener('click', function (event) {
-
-  const txtGitUrl = document.getElementById('repo').value;
-  if(!IsValidGithubUrl(txtGitUrl)){
-    ShowErrorDialog("Information", "Please enter valid github repositoru url.");
-  }
-  else{
-    ipcRenderer.send('open-file-dialog');
-  }
-})
-ipcRenderer.on('selected-directory', function (event, path) {
-  var txtGitUrl = document.getElementById('repo').value;
-  txtGitUrl = GetCompleteGitUrl(txtGitUrl);
-  var projectType = document.querySelector('input[name="projectType-radio"]:checked').id;
-  if(!IsValidProjectDirectory(path, projectType)){
-     ShowErrorDialog("Information", "You need to select app folder");
-  }
-  else if(IsExtesnionAlreadyExists(txtGitUrl, path)) {
-    ShowErrorDialog("Information", "You have already installed this extesnion.");
-  }
-  else{
-    ShowLoading("Downloading Extension...");
-    if(projectType == "ios"){
-       CloneAndAddToXcode(path,txtGitUrl);
-    }else{
-      CloneAndAddToAndroid(path,txtGitUrl);
+  document.querySelector('body').addEventListener('click', function (event) {
+    if(event.target.id == 'btnInstall'){
+      ipcRenderer.send('open-file-dialog')
     }
-  }
-})
+  })
+  ipcRenderer.on('selected-directory', function (event, path) {
+    saveSettings('project-path', path)
+    const btnInstall = document.getElementById('btnInstall')
+    var gitUrl = btnInstall.getAttribute('url')
+    const platform = btnInstall.getAttribute('platform')
 
-});
+    if(!IsValidGithubUrl(gitUrl)){
+      ShowErrorDialog("Information", "Incorrect extension url.")
+    } else {
+      gitUrl = GetCompleteGitUrl(gitUrl)
+      var path =  readSettings('project-path')
+      if(IsExtesnionAlreadyExists(gitUrl, path)) {
+        ShowErrorDialog("Information", "You have already installed this extension.")
+      } else {
+        ShowLoading("Downloading Extension...")
+        if(platform == "ios"){
+          CloneAndAddToXcode(path,gitUrl)
+        } else {
+          CloneAndAddToAndroid(path,gitUrl)
+        }
+      }
+    }
+  })
+})

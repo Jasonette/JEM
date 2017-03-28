@@ -10,18 +10,7 @@ var ShowErrorDialog = function(title, message){
   electron.remote.dialog.showErrorBox(title, message);
 };
 
-    var IsValidProjectDirectory = function(path, projectType){
-    const fs = require('fs');
-    const folderPath = `${path}`;
-    var projectFile = 'Jasonette.xcodeproj';
-    if(projectType == 'android'){ projectFile = 'build.gradle'; }
-    var files = fs.readdirSync(folderPath);
-    for(var i in files){
-      if(files[i] == projectFile)
-        return true;
-    }
-    return false;
-};
+    
 
 var IsExtesnionAlreadyExists = function(gitUrl, path){
   var pieces = gitUrl.replace(".git","").split("/");
@@ -33,18 +22,20 @@ var IsExtesnionAlreadyExists = function(gitUrl, path){
 var ShowLoading = function(message, hide = false){
   if(!hide){
     document.getElementById('btnInstall').disabled = true;
-    document.getElementById('loader').style.display = "inline-block";
-    document.getElementById('loadingText').innerHTML = message;
+    document.getElementsByClassName('spinner')[0].style.display = "inline-block";
+    document.getElementsByClassName('message')[0].style.display = "inline-block";
+    document.getElementsByClassName('message')[0].innerHTML = message;
   }
   else {
 
     setTimeout(function(){
-      document.getElementById('loadingText').innerHTML = message;
+      document.getElementsByClassName('message')[0].innerHTML = message;
     }, 2000);
 
     setTimeout(function(){
       document.getElementById('btnInstall').disabled = false;
-      document.getElementById('loader').style.display = "None";
+      document.getElementsByClassName('spinner')[0].style.display = "None";
+      document.getElementsByClassName('message')[0].style.display = "None";
     }, 5000);
 
   }
@@ -53,10 +44,10 @@ var ShowLoading = function(message, hide = false){
 var IsValidGithubUrl = function(url){
   var isGithubUrl = require('is-github-url');
   if (url.indexOf("http://github.com/") !=-1){
-      return isGithubUrl(url, { strict: true });
+      return isGithubUrl(url, { strict: false });
   }
   else {
-      return isGithubUrl("http://github.com/" + url, { strict: true });
+      return isGithubUrl("http://github.com/" + url, { strict: false });
   }
 };
 var GetCompleteGitUrl = function(url){
@@ -429,45 +420,54 @@ function AddFilesInAndroidStudio(AllFiles,extesnionPath,extName,path)
 
 // Simple wrapper exposing environment variables to rest of the code.
 
+// The variables have been written to `env.json` by the build process.
 var env = jetpack.cwd(__dirname).read('env.json', 'json');
 
-// Here is the starting point for your application code.
-// All stuff below is just to show you how it works. You can delete all of it.
+var nconf = require('nconf').file({file: getUserHome() + '/sound-machine-config.json'});
 
-// Use new ES6 modules syntax for everything.
+var saveSettings = function(settingKey, settingValue) {
+    nconf.set(settingKey, settingValue);
+    nconf.save();
+};
+
+var readSettings = function(settingKey) {
+    nconf.load();
+    return nconf.get(settingKey);
+};
+
+function getUserHome() {
+    return process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+}
+
 document.addEventListener('DOMContentLoaded', function () {
-
-const selectDirBtn = document.getElementById('btnInstall');
-selectDirBtn.addEventListener('click', function (event) {
-
-  const txtGitUrl = document.getElementById('repo').value;
-  if(!IsValidGithubUrl(txtGitUrl)){
-    ShowErrorDialog("Information", "Please enter valid github repositoru url.");
-  }
-  else{
-    electron.ipcRenderer.send('open-file-dialog');
-  }
-});
-electron.ipcRenderer.on('selected-directory', function (event, path) {
-  var txtGitUrl = document.getElementById('repo').value;
-  txtGitUrl = GetCompleteGitUrl(txtGitUrl);
-  var projectType = document.querySelector('input[name="projectType-radio"]:checked').id;
-  if(!IsValidProjectDirectory(path, projectType)){
-     ShowErrorDialog("Information", "You need to select app folder");
-  }
-  else if(IsExtesnionAlreadyExists(txtGitUrl, path)) {
-    ShowErrorDialog("Information", "You have already installed this extesnion.");
-  }
-  else{
-    ShowLoading("Downloading Extension...");
-    if(projectType == "ios"){
-       CloneAndAddToXcode(path,txtGitUrl);
-    }else{
-      CloneAndAddToAndroid(path,txtGitUrl);
+  document.querySelector('body').addEventListener('click', function (event) {
+    if(event.target.id == 'btnInstall'){
+      electron.ipcRenderer.send('open-file-dialog');
     }
-  }
-});
+  });
+  electron.ipcRenderer.on('selected-directory', function (event, path) {
+    saveSettings('project-path', path);
+    const btnInstall = document.getElementById('btnInstall');
+    var gitUrl = btnInstall.getAttribute('url');
+    const platform = btnInstall.getAttribute('platform');
 
+    if(!IsValidGithubUrl(gitUrl)){
+      ShowErrorDialog("Information", "Incorrect extension url.");
+    } else {
+      gitUrl = GetCompleteGitUrl(gitUrl);
+      var path =  readSettings('project-path');
+      if(IsExtesnionAlreadyExists(gitUrl, path)) {
+        ShowErrorDialog("Information", "You have already installed this extension.");
+      } else {
+        ShowLoading("Downloading Extension...");
+        if(platform == "ios"){
+          CloneAndAddToXcode(path,gitUrl);
+        } else {
+          CloneAndAddToAndroid(path,gitUrl);
+        }
+      }
+    }
+  });
 });
 
 }());

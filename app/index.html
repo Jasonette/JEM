@@ -11,7 +11,7 @@
 	<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 	<!-- Jquery file etc -->
 	<script>if (window.module) module = window.module;</script>
-	<script src="main.js"></script>
+	<script src="settings.js"></script>
 
 
 </head>
@@ -46,9 +46,9 @@
 				</div>
 			</div>
 			<div class="border_box">
-				<label style=" font-weight: bold; font-size:15px;">GitHub Repo</label>
+				<label style=" font-weight: bold; font-size:15px;">Please select project directory</label>
 				<div class="input-group">
-					<label><span class="input-group-label">github.com/</span><input aria-required="true" class="repo-placeholder input-group-field valid" id="repo" name="jr[url]" placeholder="twbs/bootstrap.git" type="text" onchange="handleChange(this)"></label>
+					<label><input aria-required="true" class="repo-placeholder input-group-field valid" style="width:118%" id="repo" name="jr[url]" placeholder="e.g Jasonette-IOS/app" type="text" onchange="handleChange(this)"></label>
 				</div><label><span class="form-error">Required</span></label>
 				<p class="help-text"></p>
 				<fieldset class="text-center fieldset">
@@ -56,7 +56,7 @@
 				</fieldset>
 				<div class="alert callout small" data-abide-error="" style="display: none">
 					<p><i class="fi-alert"></i> Error</p>
-				</div><button id="btnInstall" class="button float-right" onclick="";>Install</button>
+				</div><button id="btnOpen" class="button float-right" onclick="";>Select</button>
 			</div>
 		</div>
 	</div>
